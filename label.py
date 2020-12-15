@@ -1,4 +1,5 @@
 import pandas as pd 
+import datetime
 # 1-> buy
 # 0-> sell
 # -1-> hold
@@ -14,26 +15,40 @@ def get_validate_timestamp(message: str):
     return val 
 
 def get_time_step():
-    valid: bool = False 
-
-    while not valid: 
+    while True: 
         x = input("Please enter the timestep (candle size) for which you'd like to label... \n 5 -> 5 minute 15 -> 15 minute 30 -> 30 minute")
+        
+        if x in ['15', '5', '30']:
+            return x 
 
+def generate_time_list(timestamp: str, step: int):
+    
+    l = []
+    val = datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+    now = datetime.datetime.now()
 
+    while val <= now: 
+        temp = val + datetime.timedelta(minutes = int(step))
+        l.append(datetime.datetime.strftime(temp, "%Y-%m-%d %H:%M:%S"))
+        val = temp 
+
+    return l 
 
 def add_label_data():
 
     
     start = get_validate_timestamp("Please enter the timestamp for which you'd like to start from")
 
+    step = get_time_step()
 
-    data_length: int =  len(df["timestamp"])
-    
+    time_list: list = generate_time_list(start, step) 
+
+    print(time_list)
+
     entry_exit_list: list = [] 
     count: int = 0
 
-    print("Starting timestamp --> ", df["timestamp"][0])
-    while(len(entry_exit_list) != data_length):
+    while(len(entry_exit_list) != len(time_list)):
         buy_enter = get_validate_timestamp("Please enter entry timestamp for buy range")
         buy_exit = get_validate_timestamp("Please enter exit timestamp for buy range")
         sell_enter = get_validate_timestamp("Please enter entry timestamp for sell range")
@@ -68,6 +83,4 @@ def add_label_data():
 
 
 if __name__ == '__main__':
-    df = pd.read_csv("../../data/candles/ETHUSDT-30m.csv")
-    add_label_data(df)
-    df.to_csv("ETHUSDT-30mEE", index=False)
+    add_label_data()
